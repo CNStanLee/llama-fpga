@@ -83,7 +83,7 @@ You’ll need to:
 
 Pre-generated binary files for different projects:
 
-[tkz.bin](https://pan.baidu.com/s/1CJyHuJaQEpKRYNh_wpAYZw?pwd=uzg1)
+[tkz.bin](https://pan.baidu.com/s/12k4x0m6EWh23ADSH_fFnmA?pwd=xbtj)
 
 [KV260, PS RAM only](https://pan.baidu.com/s/1EGnB-p37UCJSXJ1Ts4t3dw?pwd=iar3)
 
