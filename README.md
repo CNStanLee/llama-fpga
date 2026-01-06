@@ -83,6 +83,8 @@ You’ll need to:
 
 Pre-generated binary files for different projects:
 
+BaiduPan
+
 [tkz.bin](https://pan.baidu.com/s/12k4x0m6EWh23ADSH_fFnmA?pwd=xbtj)
 
 [KV260, PS RAM only](https://pan.baidu.com/s/1EGnB-p37UCJSXJ1Ts4t3dw?pwd=iar3)
@@ -94,6 +96,16 @@ Pre-generated binary files for different projects:
 [Alveo U250, Dual channel DDR4](https://pan.baidu.com/s/1JxY3DFMyPBYyCZUV_avXsQ?pwd=1jwp)
 
 [Alveo U250, Quad channel DDR4](https://pan.baidu.com/s/1CJyHuJaQEpKRYNh_wpAYZw?pwd=uzg1)
+
+GoogleDrive
+
+[tkz.bin](https://drive.google.com/file/d/13M-1aShAJKDaGGEpRKctNyE5LDMLDeG6/view?usp=sharing)
+
+[KV260, PS RAM only](https://drive.google.com/drive/folders/12hsunJvtLHCOnNOYfKJd9-nf2N3aIb8Z?usp=sharing)
+
+[Alveo U250, Dual channel DDR4](https://drive.google.com/drive/folders/18J-SO3gsj2KjDvtgqEmPmcemfs43g6te?usp=sharing)
+
+[Alveo U250, Quad channel DDR4](https://drive.google.com/drive/folders/1yn---glfBkRvqQJAjrF6Oc3_xH5kbfG8?usp=sharing)
 
 ##  Running on Alveo U250
 
