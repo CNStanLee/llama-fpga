@@ -1,0 +1,102 @@
+package top
+
+import adapter.{FlowGate, FlowMux}
+import c2c.{AllGatherNode, AllReduce}
+import mlp.IndexReorder
+import spinal.core._
+import spinal.lib._
+import util.{FlowAddLast, FlowThrowLast}
+
+import scala.language.postfixOps
+
+class AllGatherSubMod(
+                       id: Int,
+                       numOfCore: Int,
+                       width: Int,
+                       mlpDim: Int,
+                       resOut2NodeTag: Int,
+                       lnOut2NodeTag: Int,
+                       index2NodeTag: Int,
+                       dotOut2NodeTag: List[Int],
+                       acc_func: Flow[Fragment[Bits]] => Flow[Fragment[Bits]]
+                     ) extends Component {
+
+  require(isPow2(numOfCore))
+
+  val idWidth = log2Up(numOfCore)
+  val partialMlpDim = mlpDim / numOfCore
+
+  val io = new Bundle {
+    val dotOut = slave(Flow(util.AxiFrame(Bits(width bits), userBit = 6)))
+    val resOut = slave(Flow(Fragment(util.AxiFrame(Bits(width bits), userBit = 6))))
+    val lnOut = slave(Flow(Fragment(util.AxiFrame(Bits(width bits), userBit = 6))))
+    val allGatherOut = master(Flow(util.AxiFrame(Bits(width bits), userBit = 6)))
+    val allReduceOut = master(Flow(util.AxiFrame(Bits(width bits), userBit = 6)))
+
+    val indexIn = slave(Flow(Fragment(util.AxiFrame(Bits(16 bits), userBit = 6))))
+    val gateIndexIn = slave(Flow(Fragment(util.AxiFrame(Bits(16 bits), userBit = 6))))
+    val ugIndexIn = slave(Flow(Fragment(util.AxiFrame(Bits(16 bits), userBit = 6))))
+    val indexOut = master(Flow(Fragment(util.AxiFrame(Bits(16 bits), userBit = 6))))
+  }
+
+  io.dotOut.valid.addAttribute("mark_debug", "true")
+  io.dotOut.tuser.addAttribute("mark_debug", "true")
+  io.allGatherOut.valid.addAttribute("mark_debug", "true")
+  io.allReduceOut.valid.addAttribute("mark_debug", "true")
+
+  val c2c = if (numOfCore != 1) new Bundle {
+    val from = slave(Flow(Fragment(util.AxiFrame(Bits(width bits), userBit = 6, destBit = idWidth)))) addTag(crossClockDomain)
+    val to = master(Flow(Fragment(util.AxiFrame(Bits(width bits), userBit = 6, destBit = idWidth)))) addTag(crossClockDomain)
+  } else null
+
+  noIoPrefix()
+  util.AxiStreamSpecRenamer(io.allReduceOut)
+  util.AxiStreamSpecRenamer(io.allGatherOut)
+  util.AxiStreamSpecRenamer(io.indexOut)
+
+  val dotOut = FlowGate.keepTagWithFragment(FlowAddLast(io.dotOut, True), dotOut2NodeTag)
+  val resOut = FlowGate.keepTagWithFragment(io.resOut, List(resOut2NodeTag))
+  val lnOut = FlowGate.keepTagWithFragment(io.lnOut, List(lnOut2NodeTag))
+  val index = FlowGate.keepTagWithFragment(io.indexIn, List(index2NodeTag))
+  val (nodeIn,nodeInErr) = FlowMux(Vec(resOut, dotOut, lnOut, index))
+
+  val node = new AllGatherNode(id, numOfCore, width, inFifoDepth = mlpDim)
+  node.io.input << nodeIn.m2sPipe
+
+  if (numOfCore != 1) {
+    node.io.to.m2sPipe >> c2c.to
+    node.io.from << c2c.from.m2sPipe.m2sPipe.m2sPipe
+  }
+
+  val reduce = new AllReduce(numOfCore, width, dotOut2NodeTag ++ List(resOut2NodeTag), acc_func)
+  val nodeOutNoLast = FlowThrowLast(node.io.output)
+  reduce.io.input << nodeOutNoLast
+  reduce.io.output.m2sPipe() >> io.allReduceOut
+  nodeOutNoLast.m2sPipe() >> io.allGatherOut
+
+  val address = (node.io.output.tdata.asUInt + node.io.output.tdest.asUInt * partialMlpDim).resize(16).asBits
+  val node2Index = Flow(Fragment(util.AxiFrame(Bits(16 bits), userBit = 6, destBit = idWidth)))
+  node2Index.valid := node.io.output.valid & node.io.output.tuser === index2NodeTag
+  node2Index.tuser := node.io.output.tuser
+  node2Index.tdata := address
+  node2Index.tdest := node.io.output.tdest
+  node2Index.last := node.io.output.last
+
+  val directIndex = Flow(Fragment(util.AxiFrame(Bits(16 bits), userBit = 6)))
+  directIndex.valid := io.indexIn.valid & io.indexIn.tuser =/= index2NodeTag
+  directIndex.tdata := io.indexIn.tdata
+  directIndex.tuser := io.indexIn.tuser
+  directIndex.last := io.indexIn.last
+
+  val reorder = new IndexReorder(numOfCore, depth = 4096, tag = index2NodeTag)
+  reorder.io.input << node2Index.m2sPipe()
+
+  val (indexOut,indexOutErr) = FlowMux(Vec(
+    reorder.io.output.m2sPipe(),
+    io.gateIndexIn.m2sPipe(),
+    io.ugIndexIn.m2sPipe(),
+    directIndex.m2sPipe()
+  ))
+
+  io.indexOut<<indexOut
+}
