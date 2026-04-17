@@ -89,13 +89,13 @@ BaiduPan
 
 [KV260, PS RAM only](https://pan.baidu.com/s/1EGnB-p37UCJSXJ1Ts4t3dw?pwd=iar3)
 
-[ZCU104, PL RAM only](https://pan.baidu.com/s/1q5eqJVlPDC9s5ny7UtPj2Q?pwd=pm13)
+[ZCU104, PL RAM only](https://pan.baidu.com/s/1OpPXQReN35YIsgkfr95Jpg?pwd=i2uc)
 
-[ZCU104, PS and PL RAM](https://pan.baidu.com/s/1NzDo5VfTwF9IlWr7IFGClA?pwd=fhub)
+[ZCU104, PS and PL RAM](https://pan.baidu.com/s/1hUX2DBe23i6S2yb82TgMxg?pwd=hequ)
 
 [Alveo U250, Dual channel DDR4](https://pan.baidu.com/s/1JxY3DFMyPBYyCZUV_avXsQ?pwd=1jwp)
 
-[Alveo U250, Quad channel DDR4](https://pan.baidu.com/s/1CJyHuJaQEpKRYNh_wpAYZw?pwd=uzg1)
+[Alveo U250, Quad channel DDR4](https://pan.baidu.com/s/18qfhT0AqX_wwWzXLHV7JNw?pwd=i8dd)
 
 GoogleDrive
 
