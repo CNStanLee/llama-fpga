@@ -73,7 +73,9 @@ int main()
 {
     init_platform();
 
-    print("Hello World\n\r");
+    /* 2026-07-18 15:13:08 IST Content: Serial line break order corrected to standard CRLF. */
+    print("Hello World\r\n");
+    /* 2026-07-18 15:13:08 IST Content end: Serial output carriage return and line feed fixed. */
     print("Successfully ran Hello World application");
 
 //	Xil_ICacheEnable();
@@ -146,8 +148,23 @@ int main()
 //		printf("%d\n", ret);
 		printf("Turn: %d, User Prompt:\n", t);
 
-		fgets(prompt, MAX_PROMPT_LEN, stdin);
-		prompt[strlen(prompt) - 1]='\0';
+		/* 2026-07-18 15:26:43 IST Content: Bypass fgets waiting for LF, read serial port directly, so Minicom's CR, LF, CRLF can all end the input. */
+		size_t prompt_len = 0;
+		char serial_char;
+		while(1){
+			serial_char = inbyte();
+			if(serial_char == '\r' || serial_char == '\n'){
+				if(prompt_len == 0){
+					continue;
+				}
+				break;
+			}
+			if(prompt_len < MAX_PROMPT_LEN - 1){
+				prompt[prompt_len++] = serial_char;
+			}
+		}
+		prompt[prompt_len] = '\0';
+		/* 2026-07-18 15:26:43 IST Content end: Fixed the issue of serial input blocking when Minicom only sends CR. */
 		printf("%s\n", prompt);
 		sprintf(rendered_prompt, "[INST] %s [/INST]", prompt);
 
@@ -169,6 +186,8 @@ int main()
 
 		currTk = 0;
 		prev_token = 0;
+		/* 2026-07-18 15:13:08 IST Content: Count consecutive <unk>, if it reaches 20, determine the current round has failed. */
+		int consecutive_unk = 0;
 		for(int i=0;i<MAX_DECODE_LEN;i++){
 			while(((currTk>>31) & 0x01) != 1){
 				currTk = Xil_In32(EDGELLM_BASE_ADDR+0x04);
@@ -180,11 +199,20 @@ int main()
 			currTk = 0;
 			char *piece = decode(&tokenizer, prev_token, decodeTk);
 			safe_printf(piece);
+			if(decodeTk == 0){
+				consecutive_unk++;
+			}else{
+				consecutive_unk = 0;
+			}
+			if(consecutive_unk == 20){
+				break;
+			}
 			if(decodeTk == 2){
 				break;
 			}
 			prev_token = decodeTk;
 		}
+		/* 2026-07-18 15:13:08 IST Content end: After 20 consecutive <unk>, automatically enter the next round of conversation. */
 		XTime_GetTime(&tEnd);
 		tUsed = ((tEnd - tCur) * 1000000) / (COUNTS_PER_SECOND);
 
@@ -470,4 +498,3 @@ void safe_printf(char *piece) {
     printf("%s", piece);
     fflush(stdout);
 }
-

@@ -1,0 +1,12 @@
+# Local model sources and weights
+meta-llama/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+
+# Generated binary artifacts
+*.bin
+
+# Notebook temporary files
+.ipynb_checkpoints/

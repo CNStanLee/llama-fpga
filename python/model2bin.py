@@ -3,8 +3,12 @@ from awq import AutoAWQForCausalLM
 from awq.evaluation import *
 from transformers import AutoTokenizer
 import os
+import math
 import torch
-from transformers.models.llama.modeling_llama import *
+from transformers.models.llama.modeling_llama import (
+    LlamaDecoderLayer,
+    LlamaForCausalLM,
+)
 from awq.modules.linear import (
     WQLinear_GEMM,
     WQLinear_GEMV,
@@ -15,7 +19,6 @@ from awq.modules.linear import (
 import numpy as np
 import torch.nn
 from awq.modules.linear import WQLinear_GEMV
-from transformers.models.llama.modeling_llama import *
 
 
 PAGE_SIZE = 8192
@@ -344,8 +347,8 @@ class SplitSparseAxpy:
         self.num_core = num_core
         self.dma_split = dma_split
         self.scale_up = scale_up
-        weight_shape = linear.weight.data.shape
-        linear.weight.data = linear.weight.data.reshape([-1, 4, weight_shape[1]]).permute(1, 0, 2).reshape([-1, weight_shape[1]])
+        # weight_shape = linear.weight.data.shape
+        # linear.weight.data = linear.weight.data.reshape([-1, 4, weight_shape[1]]).permute(1, 0, 2).reshape([-1, weight_shape[1]])
         w, self.w_uint8, self.scale, self.zero = pseudo_quantize_tensor_axpy(linear.weight.data)
         # if num_core != 4:
         self.w_uint8 = self.w_uint8.cpu().numpy().reshape([self.in_dim, self.num_core, -1])
@@ -424,7 +427,7 @@ class LlammaLayerFromAWQ:
         self.num_core = num_core
         self.dma_split = dma_split
         self.scale_up = scale_up
-        self.head = self.layer.self_attn.num_heads
+        self.head = self.layer.self_attn.config.num_attention_heads
         self.dim = layer.hidden_size
         self.attnQKV_split = 2
         self.attnO_split = 2
@@ -518,7 +521,7 @@ class LlamaModelFromAWQ:
         self.dma_split = dma_split
         self.scale_up = scale_up
         self.lmhead_split = 16
-        self.head = model.model.layers[0].self_attn.num_heads
+        self.head = model.config.num_attention_heads
         self.dim = model.lm_head.in_features
         self.head_dim = self.dim // self.head
         self.embed = LlamaEmbedding(model.model.embed_tokens, group, num_core, dma_split)

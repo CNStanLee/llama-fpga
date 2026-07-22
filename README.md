@@ -91,7 +91,7 @@ BaiduPan
 
 [ZCU104, PL RAM only](https://pan.baidu.com/s/1OpPXQReN35YIsgkfr95Jpg?pwd=i2uc)
 
-[ZCU104, PS and PL RAM](https://pan.baidu.com/s/1hUX2DBe23i6S2yb82TgMxg?pwd=hequ)
+<!-- [ZCU104, PS and PL RAM](https://pan.baidu.com/s/1hUX2DBe23i6S2yb82TgMxg?pwd=hequ) -->
 
 [Alveo U250, Dual channel DDR4](https://pan.baidu.com/s/1JxY3DFMyPBYyCZUV_avXsQ?pwd=1jwp)
 
@@ -106,6 +106,8 @@ GoogleDrive
 [Alveo U250, Dual channel DDR4](https://drive.google.com/drive/folders/18J-SO3gsj2KjDvtgqEmPmcemfs43g6te?usp=sharing)
 
 [Alveo U250, Quad channel DDR4](https://drive.google.com/drive/folders/1yn---glfBkRvqQJAjrF6Oc3_xH5kbfG8?usp=sharing)
+
+[ZCU104, PS and PL RAM](https://drive.google.com/file/d/1GTJrpNBJcy-l4Ah1sSVMabdLix0SEtHC/view?usp=drive_link)
 
 ##  Running on Alveo U250
 
